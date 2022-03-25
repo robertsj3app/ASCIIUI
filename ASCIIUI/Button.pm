@@ -1,4 +1,5 @@
 {
+use lib '.';
 package ASCIIUI::Button;
 require Win32::Console::ANSI;
 require ASCIIUI::Text;
@@ -12,7 +13,8 @@ sub new
 		text => shift,
 		color => shift,
 		action => shift,
-		parent => shift,		
+		parent => shift,
+		enabled => 1,		
 	};
 	
 	bless $self, $class;
@@ -102,7 +104,7 @@ sub getType
 # Draws a button on the screen.
 sub draw
 {
-	my ($self, $clickHash) = @_;
+	my ($self) = @_;
 	
 	$x = $self->{topCorner}[0];
 	$y = $self->{topCorner}[1];	
@@ -112,27 +114,9 @@ sub draw
 	$showText = "| ".$self->{text}." |";
 	
 	print "\e[$self->{color}[0];$self->{color}[1]m";
-	# Will phase this out soon when moving away from clickspace and into keyboard navi.
-	if($clickHash =~ /HASH/)
-	{
-		ASCIIUI::Text::printAt($x,$y,$line,$clickHash,$self);
-		ASCIIUI::Text::printAt($x,$y+1,$showText,$clickHash,$self);
-		ASCIIUI::Text::printAt($x,$y+2,$line,$clickHash,$self);
-	}
-	elsif($clickHash =~ /./i)
-	{
-		ASCIIUI::Text::printAt($x,$y,$line,undef,$self);
-		ASCIIUI::Text::printAt($x,$y+1,$showText,undef,$self);
-		ASCIIUI::Text::printAt($x,$y+2,$line,undef,$self);
-	}
-	else
-	{
-		ASCIIUI::Text::printAt($x,$y,$line,undef,$self);
-		ASCIIUI::Text::printAt($x,$y+1,$showText,undef,$self);
-		ASCIIUI::Text::printAt($x,$y+2,$line,undef,$self);
-	}
-	
-	$self->{storage} = $clickHash;
+	ASCIIUI::Text::printAt($x,$y,$line,undef,$self);
+	ASCIIUI::Text::printAt($x,$y+1,$showText,undef,$self);
+	ASCIIUI::Text::printAt($x,$y+2,$line,undef,$self);
 	print "\e[49;39m";
 }
 
@@ -140,7 +124,7 @@ sub draw
 sub redraw
 {
 	my ($self) = @_;
-	$self->draw($self->{storage});
+	$self->draw();
 }
 
 sub hover
@@ -148,15 +132,14 @@ sub hover
 	my ($self) = @_;
 	$self->{color}[0] -= 10;
 	$self->{color}[1] += 10;
-	$self->redraw();
 }
 
 sub unhover
 {
 	my ($self) = @_;
+	$temp = $self->{color}[0];
 	$self->{color}[0] += 10;
 	$self->{color}[1] -= 10;
-	$self->redraw();
 }
 
 #Runs the function the button is linked to, passing a reference to itself as the first argument.
@@ -165,8 +148,7 @@ sub click
 	my ($self, @args) = @_;
 	$sub = $self->{action};
 	$self->unhover();
-	&$sub($self, @args);
-		
+	&$sub($self, @args);		
 }
 	1;
 }

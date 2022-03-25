@@ -1,10 +1,20 @@
+
+use lib '..';
 use ASCIIUI::Scene;
 
 $nameVar = "";
 $pokemon = "";
 
-$selectionScene = ASCIIUI::Scene->new([
+$selectionScene = ASCIIUI::Scene->new([120,40],[
 	ASCIIUI::Text->new(18, 5, "Choose your starter Pokemon!"),
+
+	ASCIIUI::Hotkey->new("Skip Selection Screen", "s", 
+		sub
+		{
+            $output->setText("You skipping bastard!");
+			$selectionScene->unload();
+			$statScene->load();
+		}),
 
 	ASCIIUI::Button->new([5,10], "Bulbasaur", [47,32], 
 	sub 
@@ -117,7 +127,7 @@ $selectionScene = ASCIIUI::Scene->new([
 	),
 ]);
 
-$statScene = ASCIIUI::Scene->new([
+$statScene = ASCIIUI::Scene->new([120,40],[
 	ASCIIUI::Button->new([1,1], "<-", [41,37],
 	sub
 	{
@@ -127,7 +137,7 @@ $statScene = ASCIIUI::Scene->new([
 	}
 	),
 
-    $output = ASCIIUI::Text->new(18, 5, ""),
+    $output = ASCIIUI::Text->new(18, 5, "POOOOOPY"),
 
 ]);
 

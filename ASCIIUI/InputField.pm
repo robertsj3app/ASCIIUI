@@ -41,7 +41,7 @@ sub write
 
 sub draw()
 {
-    my ($self) = @_;
+    my ($self, $framebuffer) = @_;
 
     $x = $self->{topCorner}[0];
 	$y = $self->{topCorner}[1];
@@ -58,9 +58,9 @@ sub draw()
         $line .= "_";
     }
     $line .= "]";
-    print "\e[$self->{color}[0];$self->{color}[1]m";
-    ASCIIUI::Text::printAt($x, $y, $line, undef, $self);
-    print "\e[49;39m";
+    #print "\e[$self->{color}[0];$self->{color}[1]m";
+    ASCIIUI::Text::printAt($x, $y, $line, $framebuffer, "\e[$self->{color}[0];$self->{color}[1]m");
+    #print "\e[49;39m";
 }
 
 sub redraw()

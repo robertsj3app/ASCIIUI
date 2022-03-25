@@ -1,5 +1,4 @@
 {
-use lib '.';
 package ASCIIUI::Button;
 require Win32::Console::ANSI;
 require ASCIIUI::Text;
@@ -104,7 +103,7 @@ sub getType
 # Draws a button on the screen.
 sub draw
 {
-	my ($self) = @_;
+	my ($self, $framebuffer) = @_;
 	
 	$x = $self->{topCorner}[0];
 	$y = $self->{topCorner}[1];	
@@ -113,11 +112,12 @@ sub draw
 	$line .= "+" for 1..($textLen + 4);
 	$showText = "| ".$self->{text}." |";
 	
-	print "\e[$self->{color}[0];$self->{color}[1]m";
-	ASCIIUI::Text::printAt($x,$y,$line,undef,$self);
-	ASCIIUI::Text::printAt($x,$y+1,$showText,undef,$self);
-	ASCIIUI::Text::printAt($x,$y+2,$line,undef,$self);
-	print "\e[49;39m";
+	#print "\e[$self->{color}[0];$self->{color}[1]m";
+	
+	ASCIIUI::Text::printAt($x,$y,$line,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+	ASCIIUI::Text::printAt($x,$y+1,$showText,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+	ASCIIUI::Text::printAt($x,$y+2,$line,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+	#print "\e[49;39m";
 }
 
 # Redraws the button. Will be identical to draw once clickspace is phased out.
@@ -137,7 +137,6 @@ sub hover
 sub unhover
 {
 	my ($self) = @_;
-	$temp = $self->{color}[0];
 	$self->{color}[0] += 10;
 	$self->{color}[1] -= 10;
 }

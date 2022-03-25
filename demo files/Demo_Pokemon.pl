@@ -1,4 +1,3 @@
-
 use lib '..';
 use ASCIIUI::Scene;
 
@@ -23,7 +22,7 @@ $selectionScene = ASCIIUI::Scene->new([120,40],[
 		$selectionScene->addElement(
 			ASCIIUI::MsgBox->new([5,10], "Name your Bulbasaur!", [47,32], 0,
 			[
-                ASCIIUI::InputField->new([5,10], "Enter name here!", 40, [47,32], \$nameVar),
+                ASCIIUI::InputField->new([5,10], "Enter name here!", 40, [47,30], \$nameVar),
 
 				ASCIIUI::Button->new([5,10], "Ready!", [47,32], 
 				sub 
@@ -118,7 +117,7 @@ $selectionScene = ASCIIUI::Scene->new([120,40],[
 	}
 	),
 
-	ASCIIUI::Button->new([1,1], "X", [41,37],
+	ASCIIUI::Button->new([0,0], "X", [41,37],
 	sub
 	{
 		my ($sender) = @_;
@@ -128,7 +127,7 @@ $selectionScene = ASCIIUI::Scene->new([120,40],[
 ]);
 
 $statScene = ASCIIUI::Scene->new([120,40],[
-	ASCIIUI::Button->new([1,1], "<-", [41,37],
+	ASCIIUI::Button->new([0,0], "<-", [41,37],
 	sub
 	{
 		my ($sender) = @_;
@@ -137,7 +136,7 @@ $statScene = ASCIIUI::Scene->new([120,40],[
 	}
 	),
 
-    $output = ASCIIUI::Text->new(18, 5, "POOOOOPY"),
+    $output = ASCIIUI::Text->new(18, 5, ""),
 
 ]);
 

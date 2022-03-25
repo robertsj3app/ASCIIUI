@@ -19,6 +19,7 @@ sub new
 		x => shift,
 		y => shift,
 		text => shift,
+		enabled => 1,
 	};
 	bless $self, $class;
 	push(@AllText, $self);
@@ -58,14 +59,13 @@ sub DESTROY
 sub redraw
 {
 	my ($self) = @_;
-	$self->draw($self->{storage});
+	$self->draw();
 }
 
 sub setText
 {
 	my ($self, $changeTo) = @_;
 	$self->{text} = $changeTo;
-	$self->redraw();
 }
 
 sub moveTo
@@ -78,26 +78,9 @@ sub moveTo
 sub printAt
 {
 	my ($self) = @_;
-	my($x, $y, $text, $storage, $sender) = @_;
+	my($x, $y, $text, $sender) = @_;
 	
 	#print "\e[?25l";
-	$strLen = length($text);
-	if($storage =~ /ARRAY/)
-	{
-		$i = $x;
-		for($i = $x; $i < ($strLen + $x); $i++)
-		{
-		push (@$storage, "$i:$y");
-		}
-	}
-	elsif($storage =~ /HASH/)
-	{
-		$i = $x;
-		for($i = $x; $i < ($strLen + $x); $i++)
-		{
-			$$storage{"$i:$y"} = $sender;
-		}
-	}
 	Win32::Console::ANSI::Cursor($x, $y);
 	print $text."\n";
 	#print "\e[?25h";

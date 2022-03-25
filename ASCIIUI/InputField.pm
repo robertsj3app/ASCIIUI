@@ -14,6 +14,7 @@ sub new
 		color => shift,
         variable => shift,
 		parent => shift,
+		enabled => 1,
 	};
 	
 	bless $self, $class;
@@ -30,8 +31,11 @@ sub write
     }
     else
     {
-        ${$self->{variable}} .= $char;
-    }
+		if(length(${$self->{variable}}) < $self->{length} - 2)
+		{
+        	${$self->{variable}} .= $char;
+		}
+	}
     $self->setText(${$self->{variable}});
 }
 
@@ -70,7 +74,6 @@ sub hover
 	my ($self) = @_;
 	$self->{color}[0] -= 10;
 	$self->{color}[1] += 10;
-	$self->redraw();
 }
 
 sub unhover
@@ -78,7 +81,6 @@ sub unhover
 	my ($self) = @_;
 	$self->{color}[0] += 10;
 	$self->{color}[1] -= 10;
-	$self->redraw();
 }
 
 sub setPos

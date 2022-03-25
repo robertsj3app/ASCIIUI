@@ -4,10 +4,13 @@ require ASCIIUI::MsgBox;
 require ASCIIUI::Text;
 require ASCIIUI::Button;
 require ASCIIUI::InputField;
+require ASCIIUI::GroupBox;
+require ASCIIUI::Hotkey;
 use Win32::Console;
 use Win32::Console::ANSI qw(SetConsoleFullScreen Cursor);
 use Term::ReadKey;
 use Term::RawInput;
+use Term::ANSIColor;
 
 $|++;
 my $selectedElement = ();
@@ -22,14 +25,28 @@ sub new
 {
 	my $class = shift;
 	my $self = {
-		elements => shift,	
+		size => shift,
+		elements => shift,
+		runOnLoad => shift,	
 		loaded => 0,	
 	};
 	
 	bless $self, $class;
 	return $self;
 }
-
+sub hasHotkey
+{
+	my ($self, $key) = @_;
+	@allElements = $self->getElements();
+	foreach $e (@allElements)
+	{
+		if(ref($e) =~ /Hotkey/ && $e->{key} eq $key)
+		{
+			return $e;
+		}
+	}
+	return 0;
+}
 sub addElement
 {
 	my ($self, $newElement) = @_;
@@ -80,11 +97,25 @@ sub destroy
 sub load
 {
 	my ($self) = @_;
-	Cursor(1, 1);
+	if($self->{size} eq "fullscreen")
+	{
+		SetConsoleFullScreen(1);
+	}
+	else
+	{
+		system("mode con lines=$self->{size}[1] cols=$self->{size}[0]");
+	}
 	system("cls");
+	if(defined($self->{runOnLoad}))
+	{
+		&$self->{runOnLoad};
+	}
 	foreach $u ($self->getElements())
 	{
-		$u->draw();
+		if(ref($u) !~ /Hotkey/ && $u->{enabled} == 1)
+		{
+			$u->draw();
+		}
 	}
 	$self->{loaded} = 1;
 	while($self->{loaded} == 1)
@@ -96,7 +127,7 @@ sub load
 		foreach $e (@allElements)
 		{
 
-			if(ref($e) =~ /(Button|InputField)/)
+			if(ref($e) =~ /(Button|InputField)/ && $e->{enabled} == 1)
 			{
 				push(@allButtons, $e);
 			}
@@ -108,7 +139,10 @@ sub load
 	
 		foreach $ui (@allElements)
 		{
-			$ui->redraw();
+			if(ref($ui) !~ /Hotkey/ && $ui->{enabled} == 1)
+			{
+				$ui->redraw();
+			}
 		}
 	
 		if(scalar(@allBoxes) == 0)
@@ -133,20 +167,28 @@ sub load
 		}
 		elsif($key eq 'ENTER')
 		{
-			if(defined($selectedElement) && ref($selectedElement) !~ /InputField/)
+			if(defined($selectedElement) && ref($selectedElement) !~ /InputField/ && $selectedElement->{enabled} == 1)
 			{
 				$selectedElement->click();
 			}
 		}
-		elsif($key eq 'ESC')
-		{
-			last;
-		} 
+		#elsif($key eq 'ESC')
+		#{
+		#	last;
+		#} 
 		elsif($key =~ /(\w|\s)/i)
 		{
 			if(ref($selectedElement) =~ /InputField/)
 			{
 				$selectedElement->write($key);
+			}
+			else
+			{
+				$h = $self->hasHotkey($key);
+				if($h != 0 && $h->{enabled} == 1)
+				{
+					$h->call();
+				}
 			}
 		}
 		else
@@ -174,7 +216,10 @@ sub moveCursor
 	if(!defined($selectedElement))
 		{
 			$selectedElement = $activeButtons[0];
-			$selectedElement->hover();
+			if(defined($selectedElement))
+			{
+				$selectedElement->hover();
+			}
 		}
 		else
 		{

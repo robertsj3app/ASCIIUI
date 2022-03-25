@@ -15,6 +15,7 @@ use Term::ANSIColor;
 $|++;
 my $selectedElement = ();
 my $selectedWindow = ();
+my @framebuffer = ();
 $SIG{INT}  = \&quit;
 $SIG{TERM} = \&quit;
 
@@ -58,7 +59,6 @@ sub addElement
 			$self->addElement($b);
 		}
 	}
-	$newElement->draw();
 }
 
 sub unload
@@ -91,7 +91,53 @@ sub destroy
 	}
 	$selectedElement = undef;
 	$selectedWindow = undef;
-	system("cls");
+}
+
+sub updateFrameBuffer
+{
+	my ($self) = @_;
+
+	my $i;
+	my $j;
+
+	Cursor(1,1);
+	for($i = 0; $i < $self->{size}[1]; $i++)
+	{
+		for($j = 0; $j < $self->{size}[0]; $j++)
+		{
+			$framebuffer[$i][$j][0] = ' ';
+			$framebuffer[$i][$j][1] = -1;
+		}
+	}
+
+	foreach $u ($self->getElements())
+	{
+		if(ref($u) !~ /Hotkey/ && $u->{enabled} == 1)
+		{
+			$u->draw(\@framebuffer);
+		}
+	}
+
+	for($i = 0; $i < $self->{size}[1]; $i++)
+	{
+		for($j = 0; $j < $self->{size}[0]; $j++)
+		{
+			if($framebuffer[$i][$j][1] != -1 && $framebuffer[$i][$j][1] ne $framebuffer[$i][$j-1][1])
+			{
+				print $framebuffer[$i][$j][1];
+			}
+			else
+			{
+				if ($framebuffer[$i][$j][1] ne $framebuffer[$i][$j-1][1])
+				{
+					print "\e[49;39m";
+				}
+			}
+			print $framebuffer[$i][$j][0];
+		}
+	}
+
+	
 }
 
 sub load
@@ -101,7 +147,7 @@ sub load
 	{
 		SetConsoleFullScreen(1);
 	}
-	else
+	elsif($self->{size}[0] != 0 && $self->{size}[1] != 0)
 	{
 		system("mode con lines=$self->{size}[1] cols=$self->{size}[0]");
 	}
@@ -109,13 +155,6 @@ sub load
 	if(defined($self->{runOnLoad}))
 	{
 		&$self->{runOnLoad};
-	}
-	foreach $u ($self->getElements())
-	{
-		if(ref($u) !~ /Hotkey/ && $u->{enabled} == 1)
-		{
-			$u->draw();
-		}
 	}
 	$self->{loaded} = 1;
 	while($self->{loaded} == 1)
@@ -137,13 +176,7 @@ sub load
 			}
 		}	
 	
-		foreach $ui (@allElements)
-		{
-			if(ref($ui) !~ /Hotkey/ && $ui->{enabled} == 1)
-			{
-				$ui->redraw();
-			}
-		}
+		$self->updateFrameBuffer();
 	
 		if(scalar(@allBoxes) == 0)
 		{
@@ -157,7 +190,6 @@ sub load
 				$selectedElement = undef;
 			}
 			@activeButtons = $selectedWindow->getBtns();
-			$selectedWindow->redraw();
 		}
 	
 		$key = getKey();
@@ -190,10 +222,6 @@ sub load
 					$h->call();
 				}
 			}
-		}
-		else
-		{
-			print $key;
 		}
 	}
 }	

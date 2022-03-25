@@ -58,7 +58,7 @@ sub getType
 
 sub draw
 {	
-	my ($self) = @_;
+	my ($self, $framebuffer) = @_;
 		
 	my @pos = @{$self->{topCorner}};
 	my $x = $pos[0];
@@ -68,7 +68,7 @@ sub draw
 	my $width = $self->{dimensions}[1];
 
 	my @lines;
-	print "\e[$self->{color}[0];$self->{color}[1]m";
+	#print "\e[$self->{color}[0];$self->{color}[1]m";
 		
 	my $titLine = "==  $self->{title} ";
 	$titLine .= '=' for 1.. $length - 5 - $titlen;	
@@ -76,14 +76,14 @@ sub draw
 	$line .= '=' for 1..$length;
 	my $line2 = '';
 	$line2 .= ' ' for 1..$length-4;
-	ASCIIUI::Text::printAt($x,$y,$titLine,$cs,$self);
+	ASCIIUI::Text::printAt($x,$y,$titLine,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 	$i = 0;
 	for(1..$width)
 	{
-		ASCIIUI::Text::printAt($x,$y + $i + 1,"||" . $line2 . "||",$cs,$self);
+		ASCIIUI::Text::printAt($x,$y + $i + 1,"||" . $line2 . "||",$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 		$i++;
 	}
-	ASCIIUI::Text::printAt($x,$y + $i + 1,$line,$cs,$self);
+	ASCIIUI::Text::printAt($x,$y + $i + 1,$line,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 	
 	foreach $b (@{$self->{children}})
 	{

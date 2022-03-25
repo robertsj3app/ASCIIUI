@@ -1,7 +1,8 @@
+use lib '..';
 use ASCIIUI::Scene;
 
 @windowSize = (110,40);
-@playerScreenPos = ($windowSize[0]/2+1, $windowSize[1]/2+1);
+@playerScreenPos = ($windowSize[0]/2, $windowSize[1]/2);
 @playerWorldPos = (1,1);
 @mapLines = ();
 $collisionChars = "#"; ##TODO: Load this from file.
@@ -52,6 +53,7 @@ sub drawViewport
 				}
 			}
 		}
+		$mapText .= "\n";
 	}
 	return $mapText;
 }
@@ -95,9 +97,9 @@ sub movePlayer
 
 $demoScene = ASCIIUI::Scene->new([@windowSize],[
 	
-	$viewPort = ASCIIUI::Text->new(1, 1, drawViewport($playerWorldPos[0], $playerWorldPos[1])),
-	$playerSprite = ASCIIUI::Text->new($playerScreenPos[0], $playerScreenPos[1], "\e[31;49m@\e[39;49m"),
-	$pos = ASCIIUI::Text->new(1,1, "Pos:"),
+	$viewPort = ASCIIUI::Text->new(0, 0, drawViewport($playerWorldPos[0], $playerWorldPos[1])),
+	$playerSprite = ASCIIUI::Text->new($playerScreenPos[0], $playerScreenPos[1], "@"),
+	$pos = ASCIIUI::Text->new(0,0, "Pos:"),
 	$menu = ASCIIUI::GroupBox->new([2,2], [19,12], "MENU", [47,31], []),
 	$invBtn = ASCIIUI::Button->new([5,3], "Inventory", [47,31], 
 		sub

@@ -3,7 +3,6 @@
 ## PERL MODULE FOR PRINTING TEXT ANYWHERE ON THE SCREEN ##	
 	
 package ASCIIUI::Text;
-use parent Win32::Console::ANSI;
 
 our @AllText;
 
@@ -28,17 +27,16 @@ sub new
 
 sub draw
 {
-	my ($self, $storage) = @_;
+	my ($self, $framebuffer) = @_;
 	
 	$x = $self->{x};
 	$y = $self->{y};
 	$text = $self->{text};
 	$i = 0;
 	my @lines = split("\n", $text);
-	$self->{storage} = $storage;
 	foreach $l (@lines)
 	{
-		printAt($x, $y+$i, $l, $storage);
+		printAt($x, $y+$i, $l, $framebuffer);
 		$i++;
 	}
 }
@@ -78,11 +76,22 @@ sub moveTo
 sub printAt
 {
 	my ($self) = @_;
-	my($x, $y, $text, $sender) = @_;
+	my($x, $y, $text, $framebuffer, $color) = @_;
 	
 	#print "\e[?25l";
-	Win32::Console::ANSI::Cursor($x, $y);
-	print $text."\n";
+	#Win32::Console::ANSI::Cursor($x, $y);
+	if(!defined($color))
+	{
+		$color = -1;
+	}
+	my @chars = split(//, $text);
+	foreach $c (@chars)
+	{
+		$$framebuffer[$y][$x][1] = $color;
+		$$framebuffer[$y][$x][0] = $c;
+		$x++;
+	}
+	#print $text."\n";
 	#print "\e[?25h";
 }
 	1;

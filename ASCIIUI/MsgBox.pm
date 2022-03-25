@@ -19,7 +19,8 @@ sub new
 		text => shift,
 		color => shift,
 		length => shift,
-		btnObjects => shift,	
+		btnObjects => shift,
+		enabled => 1,	
 	};
 	
 	bless $self, $class;
@@ -57,7 +58,6 @@ sub setPos
 {
 	my ($self, @newPos) = @_;
 	$self->{topCorner} = @newPos;
-	$self->redraw();
 }
 sub getBtns
 {
@@ -83,7 +83,7 @@ sub setText
 
 sub draw
 {	
-	my ($self) = @_;
+	my ($self, $framebuffer) = @_;
 		
 	if(length(@{$self->{btnTexts}}) != length(@{$self->{btnActions}}))
 	{
@@ -94,13 +94,12 @@ sub draw
 	my $btnLengths = 0;
 	my $inputLengths = 0;
 	my $btnKerning = 3;
-	my $cs = $self->{clickSpace};
 	my @chars = split(//, $txt);
 	my @pos = @{$self->{topCorner}};
 	my $x = $pos[0];
 	my $y = $pos[1];
 	my @lines;
-	print "\e[$self->{color}[0];$self->{color}[1]m";
+	#print "\e[$self->{color}[0];$self->{color}[1]m";
 	
 	foreach $b (@{$self->{btnObjects}})
 	{
@@ -124,7 +123,7 @@ sub draw
 		
 	my $line2 = '';
 	$line2 .= '=' for 1..($leng + 6);
-	ASCIIUI::Text::printAt($x,$y,$line2,$cs,$self);
+	ASCIIUI::Text::printAt($x,$y,$line2,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 	
 	$output = '';
 	foreach $c (@chars)
@@ -157,7 +156,7 @@ sub draw
 	$xoffset = 4;
 	foreach $l (@lines)
 	{
-		ASCIIUI::Text::printAt($x,($y+$yoffset),"|| $l ||",$cs,$self);
+		ASCIIUI::Text::printAt($x,($y+$yoffset),"|| $l ||",$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 		$yoffset++;
 	}
 	$btnyoffset = $yoffset;	
@@ -177,10 +176,10 @@ sub draw
 	}
 	for($p = 0; $p < $howManyBlanks; $p++)
 	{
-		ASCIIUI::Text::printAt($x,($y+$yoffset),$clearSpace,$cs,$self);
+		ASCIIUI::Text::printAt($x,($y+$yoffset),$clearSpace,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 		$yoffset++;
 	}
-	ASCIIUI::Text::printAt($x,($y+$yoffset),$line2,$cs,$self);
+	ASCIIUI::Text::printAt($x,($y+$yoffset),$line2,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 	
 	my $btnxoffset = 0;
 	for($j = 0; $j < scalar(@{$self->{btnObjects}}); $j++)
@@ -197,10 +196,7 @@ sub draw
 		{
 			$btnyoffset += 3; 
 		}
-	}
-	foreach $b (@{$self->{btnObjects}})
-	{
-		$b->redraw();
+		#$self->{btnObjects}[$j]->draw($framebuffer);
 	}
 
 	print "\e[39;49m";
@@ -215,14 +211,9 @@ sub click
 		{
 			push(@AllBoxes, $self);
 			splice(@AllBoxes, $i, 1);
-			$self->redraw();
 		}
 	}
 }
-sub redraw
-{
-	my ($self) = @_;
-	$self->draw();
-}
+
 	1;
 }

@@ -95,6 +95,7 @@ sub updateFrameBuffer
 
 	my $i;
 	my $j;
+	my $frame;
 
 	Cursor(1,1);
 	for($i = 0; $i < $self->{size}[1]; $i++)
@@ -120,20 +121,20 @@ sub updateFrameBuffer
 		{
 			if($framebuffer[$i][$j][1] != -1 && $framebuffer[$i][$j][1] ne $framebuffer[$i][$j-1][1])
 			{
-				print $framebuffer[$i][$j][1];
+				$frame .= $framebuffer[$i][$j][1];
 			}
 			else
 			{
 				if ($framebuffer[$i][$j][1] ne $framebuffer[$i][$j-1][1])
 				{
-					print "\e[49;39m";
+					$frame .= "\e[49;39m";
 				}
 			}
-			print $framebuffer[$i][$j][0];
+			$frame .= $framebuffer[$i][$j][0];
 		}
 	}
 
-	
+	print $frame;	
 }
 
 sub load

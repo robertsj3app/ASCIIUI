@@ -1,21 +1,20 @@
 {
 package ASCIIUI::Scene;
-require ASCIIUI::MsgBox;
-require ASCIIUI::Text;
-require ASCIIUI::Button;
-require ASCIIUI::InputField;
-require ASCIIUI::GroupBox;
-require ASCIIUI::Hotkey;
+use ASCIIUI::MsgBox;
+use ASCIIUI::Text;
+use ASCIIUI::Button;
+use ASCIIUI::InputField;
+use ASCIIUI::GroupBox;
+use ASCIIUI::Hotkey;
 use Win32::Console::ANSI qw(SetConsoleFullScreen Cursor);
 use Term::RawInput;
 
 my $selectedElement = ();
 my $selectedWindow = ();
 my @framebuffer = ();
+my $cursorHidden = 1;
 $SIG{INT}  = \&quit;
 $SIG{TERM} = \&quit;
-
-print "\e[?25l";
 
 # Declares a new Scene object.
 sub new
@@ -31,6 +30,19 @@ sub new
 	bless $self, $class;
 	return $self;
 }
+
+sub hideCursor
+{
+	print "\e[?25l";
+	$cursorHidden = 1;
+}
+
+sub showCursor
+{
+	print "\e[?25h";
+	$cursorHidden = 0;
+}
+
 sub hasHotkey
 {
 	my ($self, $key) = @_;
@@ -57,12 +69,12 @@ sub addElement
 	}
 }
 
-sub unload
+sub unload 
 {
-	my ($self) = @_;
-	$self->{loaded} = 0;
+	my ($self) = @_; 
 	$selectedElement = undef;
 	$selectedWindow = undef;
+	$self->{loaded} = 0;
 }
 
 sub destroy
@@ -145,6 +157,7 @@ sub updateFrameBuffer
 sub load
 {
 	my ($self) = @_;
+	$self->hideCursor();
 	if($self->{size} eq "fullscreen")
 	{
 		SetConsoleFullScreen(1);

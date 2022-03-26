@@ -1,5 +1,6 @@
 {
 package ASCIIUI::Hotkey;
+use parent ASCIIUI::Enableable;
 
 sub new
 {

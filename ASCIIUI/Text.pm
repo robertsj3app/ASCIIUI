@@ -1,99 +1,72 @@
 {
-	
-## PERL MODULE FOR PRINTING TEXT ANYWHERE ON THE SCREEN ##	
-	
+
+# TEXT BOX OBJECT FUNCTIONALITY AND PRINTAT FUNCTION USED FOR WRITING TO FRAMEBUFFER #
+
 package ASCIIUI::Text;
+use parent ASCIIUI::UIElement;
 
-our @AllText;
+use warnings;
+use strict;
 
-sub getAll
-{
-	return @AllText;
-}
-
+# Declare a new Text object
 sub new
 {
 	my $class = shift;
 	my $self = {
-		x => shift,
-		y => shift,
-		text => shift,
-		enabled => 1,
+		topCorner => shift,	# [X,Y] array for top left corner of object
+		text => shift,		# The text this object should display
+		color => shift,		# [FG,BG] array for color, use ANSI color codes documented in Win32::Console::ANSI [https://metacpan.org/pod/Win32::Console::ANSI#Escape-sequences-for-Set-Graphics-Rendition]
+		parent => shift,    # A reference to a parent object, if any (optional)
+		enabled => 1,		# 1/0 Whether this object can be interacted with (optional)
 	};
+
 	bless $self, $class;
-	push(@AllText, $self);
 	return $self;
 }
 
+# Write display data to framebuffer
 sub draw
 {
 	my ($self, $framebuffer) = @_;
 	
-	$x = $self->{x};
-	$y = $self->{y};
-	$text = $self->{text};
-	$i = 0;
-	my @lines = split("\n", $text);
-	foreach $l (@lines)
+	my $x = $self->{topCorner}[0];
+	my $y = $self->{topCorner}[1];
+	my $text = $self->{text};
+	my $i = 0;
+	my @lines = split("\n", $text); # Multiline support
+
+	foreach my $l (@lines)
 	{
-		printAt($x, $y+$i, $l, $framebuffer);
+		printAt($x, $y+$i, $l, $framebuffer, "\e[$self->{color}[0];$self->{color}[1]m"); # Write each line's display data to framebuffer
 		$i++;
 	}
 }
 
-sub DESTROY
-{
-	my ($self) = @_;	
-	for($i = 0; $i <= @AllText; $i++)
-	{
-		if($AllButtons[$i] eq $self)
-		{
-			splice(@AllText, $i, 1);
-		}
-	}
-	my $self = shift;
-	my $class = shift;
-}
-sub redraw
-{
-	my ($self) = @_;
-	$self->draw();
-}
-
+# Set text to new value
 sub setText
 {
 	my ($self, $changeTo) = @_;
 	$self->{text} = $changeTo;
 }
 
-sub moveTo
-{
-	my ($self, $newX, $newY) = @_;
-	$self->{x} = $newX;
-	$self->{y} = $newY;
-}
-
+# Function used for writing display data to framebuffer
 sub printAt
 {
-	my ($self) = @_;
 	my($x, $y, $text, $framebuffer, $color) = @_;
-	
-	#print "\e[?25l";
-	#Win32::Console::ANSI::Cursor($x, $y);
-	if(!defined($color))
+
+	if(!defined($color)) # Use default color if no color is specified
 	{
 		$color = -1;
 	}
 	my @chars = split(//, $text);
-	foreach $c (@chars)
+	foreach my $c (@chars)
 	{
-		$$framebuffer[$y][$x][1] = $color;
-		$$framebuffer[$y][$x][0] = $c;
+		$$framebuffer[$y][$x][1] = $color; # Write color data to framebuffer
+		$$framebuffer[$y][$x][0] = $c;	   # Write character data to framebuffer
 		$x++;
 	}
-	#print $text."\n";
-	#print "\e[?25h";
 }
+
 	1;
 }
 

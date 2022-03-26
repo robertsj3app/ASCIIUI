@@ -1,5 +1,8 @@
 {
+
+# GROUPBOX FUNCTIONALITY (STILL IN DEVELOPMENT)
 package ASCIIUI::GroupBox;
+use parent ASCIIUI::UIElement;
 require ASCIIUI::Text;
 require ASCIIUI::Button;
 require ASCIIUI::InputField;

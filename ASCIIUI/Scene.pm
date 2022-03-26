@@ -6,13 +6,9 @@ require ASCIIUI::Button;
 require ASCIIUI::InputField;
 require ASCIIUI::GroupBox;
 require ASCIIUI::Hotkey;
-use Win32::Console;
 use Win32::Console::ANSI qw(SetConsoleFullScreen Cursor);
-use Term::ReadKey;
 use Term::RawInput;
-use Term::ANSIColor;
 
-$|++;
 my $selectedElement = ();
 my $selectedWindow = ();
 my @framebuffer = ();
@@ -316,7 +312,7 @@ sub moveCursor
 sub getKey
 {
 	my ($input,$key)=('','');
-		($input,$key)=Term::RawInput::rawInput($prompt,1);
+		($input,$key)=Term::RawInput::rawInput('',1);
 		if($input eq '')
 		{
 			return $key;

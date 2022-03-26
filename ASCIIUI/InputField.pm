@@ -25,7 +25,7 @@ sub write
 {
     my ($self, $char) = @_;
 
-    if($char eq 'BACKSPACE')
+    if($char eq 'BACKSPACE' || $char eq 'DELETE')
     {
         chop(${$self->{variable}});
     }

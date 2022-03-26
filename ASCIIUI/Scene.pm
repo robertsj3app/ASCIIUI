@@ -119,6 +119,11 @@ sub updateFrameBuffer
 	{
 		for($j = 0; $j < $self->{size}[0]; $j++)
 		{
+			if(!exists($framebuffer[$i][$j][0]))
+			{
+				$framebuffer[$i][$j][0] = ' ';
+				$framebuffer[$i][$j][1] = -1;
+			}
 			if($framebuffer[$i][$j][1] != -1 && $framebuffer[$i][$j][1] ne $framebuffer[$i][$j-1][1])
 			{
 				$frame .= $framebuffer[$i][$j][1];

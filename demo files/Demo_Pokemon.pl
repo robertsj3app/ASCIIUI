@@ -5,7 +5,7 @@ $nameVar = "";
 $pokemon = "";
 
 $selectionScene = ASCIIUI::Scene->new([120,40],[
-	ASCIIUI::Text->new(18, 5, "Choose your starter Pokemon!"),
+	ASCIIUI::Text->new([18,5], "Choose your starter Pokemon!", [39,49]),
 
 	ASCIIUI::Hotkey->new("Skip Selection Screen", "s", 
 		sub
@@ -31,10 +31,10 @@ $selectionScene = ASCIIUI::Scene->new([120,40],[
 					$selectionScene->destroy($sender->getParent());
                     $pokemon = "Bulbasaur";
                     $output->setText("Congratulations! You now own a $pokemon named $nameVar!");
+					$nameVar = "";
 					$selectionScene->unload();
 					$statScene->load();
-				}
-				),
+				}),
 
                 ASCIIUI::Button->new([5,10], "Never Mind", [47,32], 
 				sub 
@@ -42,8 +42,7 @@ $selectionScene = ASCIIUI::Scene->new([120,40],[
 					my ($sender) = @_;
 					$selectionScene->destroy($sender->getParent());
 					$nameVar = "";
-				}
-				),
+				}),				
 			])
 		);
 	}
@@ -65,6 +64,7 @@ $selectionScene = ASCIIUI::Scene->new([120,40],[
 					$selectionScene->destroy($sender->getParent());
                     $pokemon = "Charmander";
                     $output->setText("Congratulations! You now own a $pokemon named $nameVar!");
+					$nameVar = "";
 					$selectionScene->unload();
 					$statScene->load();
 				}
@@ -99,6 +99,7 @@ $selectionScene = ASCIIUI::Scene->new([120,40],[
 					$selectionScene->destroy($sender->getParent());
                     $pokemon = "Squirtle";
                     $output->setText("Congratulations! You now own a $pokemon named $nameVar!");
+					$nameVar = "";
 					$selectionScene->unload();
 					$statScene->load();
 				}
@@ -136,7 +137,7 @@ $statScene = ASCIIUI::Scene->new([120,40],[
 	}
 	),
 
-    $output = ASCIIUI::Text->new(18, 5, ""),
+    $output = ASCIIUI::Text->new([18,5], "", [39,49]),
 
 ]);
 

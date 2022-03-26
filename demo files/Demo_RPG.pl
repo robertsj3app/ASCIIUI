@@ -97,9 +97,9 @@ sub movePlayer
 
 $demoScene = ASCIIUI::Scene->new([@windowSize],[
 	
-	$viewPort = ASCIIUI::Text->new(0, 0, drawViewport($playerWorldPos[0], $playerWorldPos[1])),
-	$playerSprite = ASCIIUI::Text->new($playerScreenPos[0], $playerScreenPos[1], "@"),
-	$pos = ASCIIUI::Text->new(0,0, "Pos:"),
+	$viewPort = ASCIIUI::Text->new([0,0], drawViewport($playerWorldPos[0], $playerWorldPos[1]), [39,49]),
+	$playerSprite = ASCIIUI::Text->new([$playerScreenPos[0], $playerScreenPos[1]], "@", [31,49]),
+	$pos = ASCIIUI::Text->new([0,0], "Pos:", [39,49]),
 	$menu = ASCIIUI::GroupBox->new([2,2], [19,12], "MENU", [47,31], []),
 	$invBtn = ASCIIUI::Button->new([5,3], "Inventory", [47,31], 
 		sub
@@ -157,37 +157,21 @@ $demoScene = ASCIIUI::Scene->new([@windowSize],[
 	$om = ASCIIUI::Hotkey->new("Open Menu", "q",
 		sub
 		{
-			
-			if($menu->{enabled} == 1) ##TODO: Allow toggling enable status of parent to toggle enable status of children, add toggleEnabled function to objects
-			{
-				$menu->{enabled} = 0;
-				$invBtn->{enabled} = 0;
-				$charBtn->{enabled} = 0;
-				$saveBtn->{enabled} = 0;
-				$quitBtn->{enabled} = 0;
-				$mr->{enabled} = 1;
-				$mu->{enabled} = 1;
-				$ml->{enabled} = 1;
-				$md->{enabled} = 1;
-			}
-			else
-			{
-				$menu->{enabled} = 1;
-				$invBtn->{enabled} = 1;
-				$charBtn->{enabled} = 1;
-				$saveBtn->{enabled} = 1;
-				$quitBtn->{enabled} = 1;
-				$mr->{enabled} = 0;
-				$mu->{enabled} = 0;
-				$ml->{enabled} = 0;
-				$md->{enabled} = 0;
-			}
+			$menu->toggleEnabled();
+			$invBtn->toggleEnabled();
+			$charBtn->toggleEnabled();
+			$saveBtn->toggleEnabled();
+			$quitBtn->toggleEnabled();
+			$mr->toggleEnabled();
+			$mu->toggleEnabled();
+			$ml->toggleEnabled();
+			$md->toggleEnabled();
 		}
 	),
 ]);
-$invBtn->{enabled} = 0;
-$charBtn->{enabled} = 0;
-$saveBtn->{enabled} = 0;
-$quitBtn->{enabled} = 0;
-$menu->{enabled} = 0;
+$invBtn->setEnabled(0);
+$charBtn->setEnabled(0);
+$saveBtn->setEnabled(0);
+$quitBtn->setEnabled(0);
+$menu->setEnabled(0);
 $demoScene->load();

@@ -1,64 +1,53 @@
 {
+
+# MESSAGEBOX FUNCTIONALITY FOR INTERACTIVE POP-UP MESSAGES AND MENUS #
+
 package ASCIIUI::MsgBox;
-require ASCIIUI::Text;
-require ASCIIUI::Button;
-require ASCIIUI::InputField;
+use parent ASCIIUI::UIElement;
+use ASCIIUI::Text;
+use ASCIIUI::Button;
+use ASCIIUI::InputField;
 
-our @AllBoxes;
 
-sub getAll
-{
-	return @AllBoxes;
-}
+use warnings;
+use strict;
 
+# Declare new MessageBox
 sub new
 {
 	my $class = shift;
 	my $self = {
-		topCorner => shift,
-		text => shift,
-		color => shift,
-		length => shift,
-		btnObjects => shift,
-		enabled => 1,	
+		topCorner => shift,  # [X,Y] array for top left corner of object
+		text => shift,		 # The text this object should display
+		color => shift,		 # [FG,BG] array for color, use ANSI color codes documented in Win32::Console::ANSI [https://metacpan.org/pod/Win32::Console::ANSI#Escape-sequences-for-Set-Graphics-Rendition]
+		length => shift,	 # The desired length for this MessageBox. May be modified if child buttons cannot fit inside this length
+		btnObjects => shift, # Array of all buttons to become children of this MessageBox
+		enabled => 1,		 # 1/0 Whether this object can be interacted with (optional)
 	};
 	
 	bless $self, $class;
-	push(@AllBoxes, $self);
 
-	foreach $b ($self->getBtns())
+	foreach $b ($self->getBtns()) # Set self as parent to all child buttons
 	{
 		$b->setParent($self);
 	}	
+
 	return $self;
 }
 
+# Custom DESTROY function, will also destroy child buttons when this object falls out of scope.
 sub DESTROY {
 	my ($self) = @_;	
-	for($i = 0; $i <= @AllBoxes; $i++)
-	{
-		if($AllBoxes[$i] eq $self)
-		{
-			splice(@AllBoxes, $i, 1);
-		}
-	}
 	foreach $b ($self->getBtns())
 		{
 			$b->DESTROY();
 			$b = undef;
-		}
+		}	
 	
-	
-	my $self = shift;
-	my $class = shift;
-
+	$self = shift;
 }
 
-sub setPos
-{
-	my ($self, @newPos) = @_;
-	$self->{topCorner} = @newPos;
-}
+# Get a list of all child buttons of this MessageBox, either by index or the entire list.
 sub getBtns
 {
 	my ($self, $index) = @_;
@@ -71,24 +60,12 @@ sub getBtns
 		return @{$self->{btnObjects}};
 	}
 }
-sub getType
-{
-	return "MSGBOX";
-}
-sub setText
-{
-	my ($self, $changeTo) = @_;
-	$self->{text} = $changeTo;
-}
 
+# Write display data to framebuffer
 sub draw
 {	
 	my ($self, $framebuffer) = @_;
-		
-	if(length(@{$self->{btnTexts}}) != length(@{$self->{btnActions}}))
-	{
-		die "Different numbers of button texts and actions!";
-	}
+
 	my $txt = $self->{text};
 	my $leng = $self->{length};
 	my $btnLengths = 0;
@@ -99,9 +76,8 @@ sub draw
 	my $x = $pos[0];
 	my $y = $pos[1];
 	my @lines;
-	#print "\e[$self->{color}[0];$self->{color}[1]m";
 	
-	foreach $b (@{$self->{btnObjects}})
+	foreach $b (@{$self->{btnObjects}}) # Lines 82 - 100 increase messagebox size if needed to ensure all children fit inside.
 	{
 		if(ref($b) !~ /InputField/)
 		{
@@ -125,8 +101,8 @@ sub draw
 	$line2 .= '=' for 1..($leng + 6);
 	ASCIIUI::Text::printAt($x,$y,$line2,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 	
-	$output = '';
-	foreach $c (@chars)
+	my $output = '';
+	foreach my $c (@chars)
 	{
 		if($c eq "\n")
 		{
@@ -152,21 +128,21 @@ sub draw
 	}
 	push(@lines, $output);
 
-	$yoffset = 1;
-	$xoffset = 4;
-	foreach $l (@lines)
+	my $yoffset = 1;
+	my $xoffset = 4;
+	foreach my $l (@lines)
 	{
 		ASCIIUI::Text::printAt($x,($y+$yoffset),"|| $l ||",$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 		$yoffset++;
 	}
-	$btnyoffset = $yoffset;	
-	$clearSpace = '||';
+	my $btnyoffset = $yoffset;	
+	my $clearSpace = '||';
 	while(length($clearSpace) < ($leng + 4))
 	{
 		$clearSpace .= ' ';
 	}
 	$clearSpace .= '||';
-	$howManyBlanks = 5;
+	my $howManyBlanks = 5;
 	foreach $b (@{$self->{btnObjects}})
 	{
 		if(ref($b) =~ /InputField/)
@@ -174,7 +150,7 @@ sub draw
 			$howManyBlanks += 3; 
 		}
 	}
-	for($p = 0; $p < $howManyBlanks; $p++)
+	for(my $p = 0; $p < $howManyBlanks; $p++)
 	{
 		ASCIIUI::Text::printAt($x,($y+$yoffset),$clearSpace,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 		$yoffset++;
@@ -182,38 +158,37 @@ sub draw
 	ASCIIUI::Text::printAt($x,($y+$yoffset),$line2,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
 	
 	my $btnxoffset = 0;
-	for($j = 0; $j < scalar(@{$self->{btnObjects}}); $j++)
+	for(my $j = 0; $j < scalar(@{$self->{btnObjects}}); $j++)
 	{
 		if($j != 0)
 		{
-			if(ref($self->{btnObjects}[$j-1]) !~ /InputField/)
+			if(ref($self->{btnObjects}[$j-1]) !~ /InputField/) # TODO: Formatting gets messed up if InputField is declared after buttons
 			{
 				$btnxoffset += $self->{btnObjects}[$j-1]->getLength() + $btnKerning;
 			}
 		}
-		$self->{btnObjects}[$j]->setPos(($x+$xoffset+$btnxoffset), ($y+$btnyoffset+2)); #= ASCIIUI::Button->new([($x+$xoffset+$btnxoffset), ($y+$btnyoffset+2)], $self->{btnTexts}[$j], [$self->{color}[0], $self->{color}[1]], $self->{btnActions}[$j]);
+		$self->{btnObjects}[$j]->setPos(($x+$xoffset+$btnxoffset), ($y+$btnyoffset+2));
 		if(ref($self->{btnObjects}[$j]) =~ /InputField/)
 		{
 			$btnyoffset += 3; 
 		}
-		#$self->{btnObjects}[$j]->draw($framebuffer);
 	}
+}
 
-	print "\e[39;49m";
-}
-sub click
-{
-	($self) = @_;
+# DEPRECATED, RETAIN FOR POSSIBLE FUTURE APPLICATIONS
+# sub click
+# {
+# 	($self) = @_;
 	
-	for($i = 0; $i <= length(@AllBoxes); $i++)
-	{
-		if($AllBoxes[$i] eq $self)
-		{
-			push(@AllBoxes, $self);
-			splice(@AllBoxes, $i, 1);
-		}
-	}
-}
+# 	for($i = 0; $i <= length(@AllBoxes); $i++)
+# 	{
+# 		if($AllBoxes[$i] eq $self)
+# 		{
+# 			push(@AllBoxes, $self);
+# 			splice(@AllBoxes, $i, 1);
+# 		}
+# 	}
+# }
 
 	1;
 }

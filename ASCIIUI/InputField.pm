@@ -1,140 +1,84 @@
 {
-package ASCIIUI::InputField;
-require Win32::Console::ANSI;
-require ASCIIUI::Text;
 
-# Declares a new button.
+# FIELD FOR ACCEPTING USER INPUT AND STORING IT IN A VARIABLE #
+
+package ASCIIUI::InputField;
+use parent ASCIIUI::Button; # InputField is a Button subclass, as it can be hovered over
+use ASCIIUI::Text;
+
+use warnings;
+use strict;
+
+# Declare a new InputField
 sub new
 {
 	my $class = shift;
 	my $self = {
-		topCorner => shift,
-		text => shift,
-        length => shift,
-		color => shift,
-        variable => shift,
-		parent => shift,
-		enabled => 1,
+		topCorner => shift, # [X,Y] array for top left corner of object
+		text => shift,      # The default text contained in the field before user input
+        length => shift,    # The max length the user can input
+		color => shift,     # [FG,BG] array for color, use ANSI color codes documented in Win32::Console::ANSI [https://metacpan.org/pod/Win32::Console::ANSI#Escape-sequences-for-Set-Graphics-Rendition]
+        variable => shift,  # A reference to a variable to store use input into
+		parent => shift,    # A reference to a parent object, if any (optional)
+		enabled => 1,       # 1/0 Whether this object can be interacted with (optional)
 	};
 	
 	bless $self, $class;
 	return $self;
 }
 
+# Input one character into the variable referenced by $self->{variable}
 sub write
 {
     my ($self, $char) = @_;
 
-    if($char eq 'BACKSPACE' || $char eq 'DELETE')
+    if($char eq 'BACKSPACE' || $char eq 'DELETE') # If a backspace is entered, remove last char
     {
         chop(${$self->{variable}});
     }
     else
     {
-		if(length(${$self->{variable}}) < $self->{length} - 2)
+		if(length(${$self->{variable}}) < $self->{length} - 2) # Otherwise, append char to variable
 		{
         	${$self->{variable}} .= $char;
 		}
 	}
-    $self->setText(${$self->{variable}});
+	
+    $self->setText(${$self->{variable}}); # Update text to reflect user input
 }
 
+# Write display data to framebuffer
 sub draw()
 {
-    my ($self, $framebuffer) = @_;
+    my ($self, $framebuffer) = @_;  # All UI objects must draw themselves into a framebuffer for display
 
-    $x = $self->{topCorner}[0];
-	$y = $self->{topCorner}[1];
-    if(${$self->{variable}} ne "")
-    {
-        $self->setText(${$self->{variable}});
-    }
-    $text = $self->{text};
-    $textLen = length($text) + 2;
-    $numUnderscores = $self->{length} - $textLen;
-    $line = "[" . $text;
-    for(1 .. $numUnderscores)
+	my $x = $self->{topCorner}[0];
+	my $y = $self->{topCorner}[1];
+	my $text = $self->{text};
+    my $textLen = length($text) + 2;
+    my $numUnderscores = $self->{length} - $textLen; # How many underscores to draw after variable text to indicate empty space
+    my $line = "[" . $text;
+    
+    for(1 .. $numUnderscores) 
     {
         $line .= "_";
     }
     $line .= "]";
-    #print "\e[$self->{color}[0];$self->{color}[1]m";
-    ASCIIUI::Text::printAt($x, $y, $line, $framebuffer, "\e[$self->{color}[0];$self->{color}[1]m");
-    #print "\e[49;39m";
+
+    ASCIIUI::Text::printAt($x, $y, $line, $framebuffer, "\e[$self->{color}[0];$self->{color}[1]m"); # Write display data to framebuffer
 }
 
-sub redraw()
-{
-    my ($self) = @_;
-    $self->draw();
-}
-
-sub hover
-{
-	my ($self) = @_;
-	$self->{color}[0] -= 10;
-	$self->{color}[1] += 10;
-}
-
-sub unhover
-{
-	my ($self) = @_;
-	$self->{color}[0] += 10;
-	$self->{color}[1] -= 10;
-}
-
-sub setPos
-{
-	my ($self, $newPosX, $newPosY) = @_;
-	$self->{topCorner}[0] = $newPosX;
-	$self->{topCorner}[1] = $newPosY;
-}
-
-sub getPos
-{
-	my ($self, $index) = @_;
-	
-	if(defined($index))
-	{
-		return $self->{topCorner}[$index];
-	}
-	return @{$self->{topCorner}};
-}
-
-sub getLength
+# Returns length, overrides parent function
+sub getLength 
 {
     my ($self) = @_;
     return $self->{length};
 }
 
-sub setText
+# Override parent function since InputField does not have a subroutine to run when clicked. Scene.pm should prevent this from ever being called
+sub click
 {
-	my ($self, $changeTo) = @_;
-	$self->{text} = $changeTo;
-}
-
-sub setColor
-{
-	my ($self, $changeTo) = @_;
-	$self->{color} = $changeTo;
-}
-
-sub getColor
-{
-	my ($self) = @_;
-	return $self->{color};
-}
-
-sub setParent
-{
-	my ($self, $newParent) = @_;
-	$self->{parent} = $newParent;
-}
-
-sub getParent
-{
-	my ($self) = @_;
-	return $self->{parent};
+	die("You can't click an InputField!");
 }
 
     1;

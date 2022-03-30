@@ -37,6 +37,13 @@ sub getColor
 	return $self->{color};
 }
 
+# Return this object's color as an ANSI escape code string
+sub getColorString
+{
+	my ($self) = @_;
+	return "\e[$self->{color}[0];$self->{color}[1]m";
+}
+
 # Set new parent reference
 sub setParent
 {

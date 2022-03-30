@@ -65,7 +65,7 @@ sub draw()
     }
     $line .= "]";
 
-    ASCIIUI::Text::printAt($x, $y, $line, $framebuffer, "\e[$self->{color}[0];$self->{color}[1]m"); # Write display data to framebuffer
+    ASCIIUI::Text::printAt($x, $y, $line, $framebuffer, $self->getColorString()); # Write display data to framebuffer
 }
 
 # Returns length, overrides parent function

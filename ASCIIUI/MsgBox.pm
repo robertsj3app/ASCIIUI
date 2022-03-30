@@ -8,7 +8,6 @@ use ASCIIUI::Text;
 use ASCIIUI::Button;
 use ASCIIUI::InputField;
 
-
 use warnings;
 use strict;
 
@@ -99,7 +98,7 @@ sub draw
 		
 	my $line2 = '';
 	$line2 .= '=' for 1..($leng + 6);
-	ASCIIUI::Text::printAt($x,$y,$line2,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+	ASCIIUI::Text::printAt($x,$y,$line2,$framebuffer,$self->getColorString());
 	
 	my $output = '';
 	foreach my $c (@chars)
@@ -132,7 +131,7 @@ sub draw
 	my $xoffset = 4;
 	foreach my $l (@lines)
 	{
-		ASCIIUI::Text::printAt($x,($y+$yoffset),"|| $l ||",$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+		ASCIIUI::Text::printAt($x,($y+$yoffset),"|| $l ||",$framebuffer,$self->getColorString());
 		$yoffset++;
 	}
 	my $btnyoffset = $yoffset;	
@@ -152,10 +151,10 @@ sub draw
 	}
 	for(my $p = 0; $p < $howManyBlanks; $p++)
 	{
-		ASCIIUI::Text::printAt($x,($y+$yoffset),$clearSpace,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+		ASCIIUI::Text::printAt($x,($y+$yoffset),$clearSpace,$framebuffer,$self->getColorString());
 		$yoffset++;
 	}
-	ASCIIUI::Text::printAt($x,($y+$yoffset),$line2,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+	ASCIIUI::Text::printAt($x,($y+$yoffset),$line2,$framebuffer,$self->getColorString());
 	
 	my $btnxoffset = 0;
 	for(my $j = 0; $j < scalar(@{$self->{btnObjects}}); $j++)

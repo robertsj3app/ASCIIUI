@@ -73,9 +73,9 @@ sub draw
 
 	$line .= "+" for 1..($textLen + 4);
 	
-	ASCIIUI::Text::printAt($x,$y,$line,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
-	ASCIIUI::Text::printAt($x,$y+1,$showText,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
-	ASCIIUI::Text::printAt($x,$y+2,$line,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+	ASCIIUI::Text::printAt($x,$y,$line,$framebuffer,$self->getColorString());
+	ASCIIUI::Text::printAt($x,$y+1,$showText,$framebuffer,$self->getColorString());
+	ASCIIUI::Text::printAt($x,$y+2,$line,$framebuffer,$self->getColorString());
 
 }
 

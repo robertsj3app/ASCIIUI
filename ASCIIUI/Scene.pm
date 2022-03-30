@@ -171,6 +171,45 @@ sub load
 	{
 		&$self->{runOnLoad};
 	}
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Arrow Up Navigation", "UPARROW", 
+		sub
+		{
+			moveCursor("u");
+		}
+	));
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Arrow Down Navigation", "DOWNARROW", 
+		sub
+		{
+			moveCursor("d");
+		}
+	));
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Arrow Left Navigation", "LEFTARROW", 
+		sub
+		{
+			moveCursor("l");
+		}
+	));
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Arrow Right Navigation", "RIGHTARROW", 
+		sub
+		{
+			moveCursor("r");
+		}
+	));
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Activate Current Selection", "ENTER",
+		sub
+		{
+			if(defined($selectedElement) && ref($selectedElement) !~ /InputField/ && $selectedElement->{enabled} == 1)
+			{
+				$selectedElement->click();
+			}
+		}
+	));
+
 	$self->{loaded} = 1;
 	while($self->{loaded} == 1)
 	{
@@ -208,34 +247,16 @@ sub load
 		}
 	
 		$key = getKey();
-		if($key =~ /(l|r|u|d).+arrow/i)
-		{		
-			moveCursor($1);
-		}
-		elsif($key eq 'ENTER')
+		if(ref($selectedElement) =~ /InputField/ && (length($key) == 1 || $key eq 'BACKSPACE'))
 		{
-			if(defined($selectedElement) && ref($selectedElement) !~ /InputField/ && $selectedElement->{enabled} == 1)
-			{
-				$selectedElement->click();
-			}
+			$selectedElement->write($key);
 		}
-		#elsif($key eq 'ESC')
-		#{
-		#	last;
-		#} 
-		elsif($key =~ /(\w|\s)/i)
+		else
 		{
-			if(ref($selectedElement) =~ /InputField/)
+			$h = $self->hasHotkey($key);
+			if($h != 0 && $h->{enabled} == 1)
 			{
-				$selectedElement->write($key);
-			}
-			else
-			{
-				$h = $self->hasHotkey($key);
-				if($h != 0 && $h->{enabled} == 1)
-				{
-					$h->call();
-				}
+				$h->call();
 			}
 		}
 	}

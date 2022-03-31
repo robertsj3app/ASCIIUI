@@ -21,11 +21,17 @@ sub getName
 	return $self->{name};
 }
 
+sub toString
+{
+	my ($self) = @_;
+	return "$self->{key} : $self->{name}"
+}
+
 sub call
 {
     my ($self) = @_;
     $sub = $self->{action};
-    &$sub;
+    &$sub($self);
 }
 	1;
 }

@@ -31,6 +31,25 @@ sub new
 	return $self;
 }
 
+sub getSelectedElement
+{
+	return $selectedElement;
+}
+
+sub getHotkeys 
+{
+	my ($self) = @_;
+	my @hotkeyRefs;
+	foreach $e ($self->getElements())
+	{
+		if(ref($e) =~ /Hotkey/)
+		{
+			push @hotkeyRefs, $e;
+		}
+	}
+	return @hotkeyRefs;
+}
+
 sub hideCursor
 {
 	print "\e[?25l";
@@ -49,7 +68,7 @@ sub hasHotkey
 	@allElements = $self->getElements();
 	foreach $e (@allElements)
 	{
-		if(ref($e) =~ /Hotkey/ && $e->{key} eq $key)
+		if(ref($e) =~ /Hotkey/ && $e->{key} eq $key && $e->getEnabled())
 		{
 			return $e;
 		}
@@ -72,7 +91,10 @@ sub addElement
 sub unload 
 {
 	my ($self) = @_; 
-	$selectedElement = undef;
+	if(defined($selectedElement))
+	{
+		$selectedElement = undef;
+	}
 	$selectedWindow = undef;
 	$self->{loaded} = 0;
 }
@@ -167,10 +189,7 @@ sub load
 		system("mode con lines=$self->{size}[1] cols=$self->{size}[0]");
 	}
 	system("cls");
-	if(defined($self->{runOnLoad}))
-	{
-		&$self->{runOnLoad};
-	}
+	
 	$self->addElement(
 		ASCIIUI::Hotkey->new("Arrow Up Navigation", "UPARROW", 
 		sub
@@ -210,6 +229,12 @@ sub load
 		}
 	));
 
+	if(defined($self->{runOnLoad}))
+	{
+		my $action = $self->{runOnLoad};
+		&$action($self);
+	}
+
 	$self->{loaded} = 1;
 	while($self->{loaded} == 1)
 	{
@@ -219,10 +244,20 @@ sub load
 		@allElements = $self->getElements();
 		foreach $e (@allElements)
 		{
-
-			if(ref($e) =~ /(Button|InputField)/ && $e->{enabled} == 1)
+			if(ref($e) =~ /(Button|InputField)/)
 			{
-				push(@allButtons, $e);
+				if($e->{enabled} == 1)
+				{
+					push(@allButtons, $e);
+				}
+				else
+				{
+					if($selectedElement == $e)
+					{
+						$e->unhover();
+						$selectedElement = ();
+					}
+				}
 			}
 			elsif(ref($e) =~ /MsgBox/)
 			{
@@ -254,7 +289,7 @@ sub load
 		else
 		{
 			$h = $self->hasHotkey($key);
-			if($h != 0 && $h->{enabled} == 1)
+			if($h)
 			{
 				$h->call();
 			}

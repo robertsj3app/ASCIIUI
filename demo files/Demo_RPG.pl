@@ -95,6 +95,13 @@ sub movePlayer
 	return $buf;
 }
 
+sub callMove
+{
+	my ($sender) = @_;
+	my $newMap = movePlayer(lc(substr($sender->{key}, 0, 1)), 1);
+	$viewPort->setText($newMap);
+}
+
 $demoScene = ASCIIUI::Scene->new([@windowSize],[
 	
 	$viewPort = ASCIIUI::Text->new([0,0], drawViewport($playerWorldPos[0], $playerWorldPos[1]), [39,49]),
@@ -126,34 +133,10 @@ $demoScene = ASCIIUI::Scene->new([@windowSize],[
 		}
 	),
 	
-	$mr = ASCIIUI::Hotkey->new("Move Right", "d", 
-		sub
-		{
-			$newMap = movePlayer('r', 1);
-			$viewPort->setText($newMap);
-		}
-	),
-	$mu = ASCIIUI::Hotkey->new("Move Up", "w", 
-		sub
-		{
-			$newMap = movePlayer('u', 1);
-			$viewPort->setText($newMap);
-		}
-	),
-	$ml = ASCIIUI::Hotkey->new("Move Left", "a", 
-		sub
-		{
-			$newMap = movePlayer('l', 1);
-			$viewPort->setText($newMap);
-		}
-	),
-	$md = ASCIIUI::Hotkey->new("Move Down", "s", 
-		sub
-		{
-			$newMap = movePlayer('d', 1);
-			$viewPort->setText($newMap);
-		}
-	),
+	$mr = ASCIIUI::Hotkey->new("Move Right", "RIGHTARROW", \&callMove),
+	$mu = ASCIIUI::Hotkey->new("Move Up", "UPARROW", \&callMove),
+	$ml = ASCIIUI::Hotkey->new("Move Left", "LEFTARROW", \&callMove),
+	$md = ASCIIUI::Hotkey->new("Move Down", "DOWNARROW", \&callMove),
 	$om = ASCIIUI::Hotkey->new("Open Menu", "q",
 		sub
 		{
@@ -162,16 +145,32 @@ $demoScene = ASCIIUI::Scene->new([@windowSize],[
 			$charBtn->toggleEnabled();
 			$saveBtn->toggleEnabled();
 			$quitBtn->toggleEnabled();
-			$mr->toggleEnabled();
-			$mu->toggleEnabled();
-			$ml->toggleEnabled();
-			$md->toggleEnabled();
+
+			foreach my $e ($demoScene->getElements())
+			{
+				if(ref($e) =~ /Hotkey/ && $e->getName() ne "Open Menu")
+				{
+					$e->toggleEnabled();
+				}	
+			}
 		}
 	),
-]);
-$invBtn->setEnabled(0);
-$charBtn->setEnabled(0);
-$saveBtn->setEnabled(0);
-$quitBtn->setEnabled(0);
-$menu->setEnabled(0);
+], 
+sub 
+{
+	my ($self) = @_;
+	foreach my $e ($self->getElements())
+	{
+		if(ref($e) =~ /Hotkey/ && $e->getName() =~ /(Navigation|Activate)/ )
+		{
+			$e->setEnabled(0);
+		}
+	}
+	$invBtn->setEnabled(0);
+	$charBtn->setEnabled(0);
+	$saveBtn->setEnabled(0);
+	$quitBtn->setEnabled(0);
+	$menu->setEnabled(0);
+});
+
 $demoScene->load();

@@ -15,6 +15,12 @@ sub new
 	bless $self, $class;
 }
 
+sub getName
+{
+	my ($self) = @_;
+	return $self->{name};
+}
+
 sub call
 {
     my ($self) = @_;

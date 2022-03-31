@@ -294,8 +294,8 @@ sub moveCursor
 			{
 				if($b != $selectedElement)
 				{
-					@curPos = $selectedElement->getPos();
-					@posPos = $b->getPos();
+					@curPos = @{$selectedElement->getPos()};
+					@posPos = @{$b->getPos()};
 					$dist = sqrt(($curPos[0] - $posPos[0])**2 + ($curPos[1] - $posPos[1])**2);
 					
 					if($whichDir =~ /u/i)

@@ -37,7 +37,7 @@ sub draw
 
 	foreach my $l (@lines)
 	{
-		printAt($x, $y+$i, $l, $framebuffer, "\e[$self->{color}[0];$self->{color}[1]m"); # Write each line's display data to framebuffer
+		printAt($x, $y+$i, $l, $framebuffer, $self->getColorString()); # Write each line's display data to framebuffer
 		$i++;
 	}
 }

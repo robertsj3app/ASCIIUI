@@ -6,7 +6,7 @@ use ASCIIUI::Button;
 use ASCIIUI::InputField;
 use ASCIIUI::GroupBox;
 use ASCIIUI::Hotkey;
-use Win32::Console::ANSI qw(SetConsoleFullScreen Cursor);
+use Win32::Console::ANSI;
 use Term::RawInput;
 
 my $selectedElement = ();
@@ -15,6 +15,12 @@ my @framebuffer = ();
 my $cursorHidden = 1;
 $SIG{INT}  = \&quit;
 $SIG{TERM} = \&quit;
+
+#use utf8;
+#binmode STDOUT, ":utf8";
+#system("chcp 65001");
+
+
 
 # Declares a new Scene object.
 sub new
@@ -29,6 +35,25 @@ sub new
 	
 	bless $self, $class;
 	return $self;
+}
+
+sub getSelectedElement
+{
+	return $selectedElement;
+}
+
+sub getHotkeys 
+{
+	my ($self) = @_;
+	my @hotkeyRefs;
+	foreach $e ($self->getElements())
+	{
+		if(ref($e) =~ /Hotkey/)
+		{
+			push @hotkeyRefs, $e;
+		}
+	}
+	return @hotkeyRefs;
 }
 
 sub hideCursor
@@ -49,7 +74,7 @@ sub hasHotkey
 	@allElements = $self->getElements();
 	foreach $e (@allElements)
 	{
-		if(ref($e) =~ /Hotkey/ && $e->{key} eq $key)
+		if(ref($e) =~ /Hotkey/ && $e->{key} eq $key && $e->getEnabled())
 		{
 			return $e;
 		}
@@ -72,7 +97,10 @@ sub addElement
 sub unload 
 {
 	my ($self) = @_; 
-	$selectedElement = undef;
+	if(defined($selectedElement))
+	{
+		$selectedElement = undef;
+	}
 	$selectedWindow = undef;
 	$self->{loaded} = 0;
 }
@@ -109,7 +137,8 @@ sub updateFrameBuffer
 	my $j;
 	my $frame;
 
-	Cursor(1,1);
+	#Cursor(1,1);
+	print "\e[1;1H";
 	for($i = 0; $i < $self->{size}[1]; $i++)
 	{
 		for($j = 0; $j < $self->{size}[0]; $j++)
@@ -151,7 +180,7 @@ sub updateFrameBuffer
 		}
 	}
 
-	print $frame;	
+	print  $frame;
 }
 
 sub load
@@ -167,10 +196,52 @@ sub load
 		system("mode con lines=$self->{size}[1] cols=$self->{size}[0]");
 	}
 	system("cls");
+	
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Arrow Up Navigation", "UPARROW", 
+		sub
+		{
+			moveCursor("u");
+		}
+	));
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Arrow Down Navigation", "DOWNARROW", 
+		sub
+		{
+			moveCursor("d");
+		}
+	));
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Arrow Left Navigation", "LEFTARROW", 
+		sub
+		{
+			moveCursor("l");
+		}
+	));
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Arrow Right Navigation", "RIGHTARROW", 
+		sub
+		{
+			moveCursor("r");
+		}
+	));
+	$self->addElement(
+		ASCIIUI::Hotkey->new("Activate Current Selection", "ENTER",
+		sub
+		{
+			if(defined($selectedElement) && ref($selectedElement) !~ /InputField/ && $selectedElement->{enabled} == 1)
+			{
+				$selectedElement->click();
+			}
+		}
+	));
+
 	if(defined($self->{runOnLoad}))
 	{
-		&$self->{runOnLoad};
+		my $action = $self->{runOnLoad};
+		&$action($self);
 	}
+
 	$self->{loaded} = 1;
 	while($self->{loaded} == 1)
 	{
@@ -180,10 +251,20 @@ sub load
 		@allElements = $self->getElements();
 		foreach $e (@allElements)
 		{
-
-			if(ref($e) =~ /(Button|InputField)/ && $e->{enabled} == 1)
+			if(ref($e) =~ /(Button|InputField)/)
 			{
-				push(@allButtons, $e);
+				if($e->{enabled} == 1)
+				{
+					push(@allButtons, $e);
+				}
+				else
+				{
+					if($selectedElement == $e)
+					{
+						$e->unhover();
+						$selectedElement = ();
+					}
+				}
 			}
 			elsif(ref($e) =~ /MsgBox/)
 			{
@@ -208,34 +289,16 @@ sub load
 		}
 	
 		$key = getKey();
-		if($key =~ /(l|r|u|d).+arrow/i)
-		{		
-			moveCursor($1);
-		}
-		elsif($key eq 'ENTER')
+		if(ref($selectedElement) =~ /InputField/ && (length($key) == 1 || $key eq 'BACKSPACE'))
 		{
-			if(defined($selectedElement) && ref($selectedElement) !~ /InputField/ && $selectedElement->{enabled} == 1)
-			{
-				$selectedElement->click();
-			}
+			$selectedElement->write($key);
 		}
-		#elsif($key eq 'ESC')
-		#{
-		#	last;
-		#} 
-		elsif($key =~ /(\w|\s)/i)
+		else
 		{
-			if(ref($selectedElement) =~ /InputField/)
+			$h = $self->hasHotkey($key);
+			if($h)
 			{
-				$selectedElement->write($key);
-			}
-			else
-			{
-				$h = $self->hasHotkey($key);
-				if($h != 0 && $h->{enabled} == 1)
-				{
-					$h->call();
-				}
+				$h->call();
 			}
 		}
 	}
@@ -273,8 +336,8 @@ sub moveCursor
 			{
 				if($b != $selectedElement)
 				{
-					@curPos = $selectedElement->getPos();
-					@posPos = $b->getPos();
+					@curPos = @{$selectedElement->getPos()};
+					@posPos = @{$b->getPos()};
 					$dist = sqrt(($curPos[0] - $posPos[0])**2 + ($curPos[1] - $posPos[1])**2);
 					
 					if($whichDir =~ /u/i)

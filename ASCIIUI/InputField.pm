@@ -3,7 +3,7 @@
 # FIELD FOR ACCEPTING USER INPUT AND STORING IT IN A VARIABLE #
 
 package ASCIIUI::InputField;
-use parent ASCIIUI::Button; # InputField is a Button subclass, as it can be hovered over
+use parent ASCIIUI::Button;
 use ASCIIUI::Text;
 
 use warnings;
@@ -19,6 +19,7 @@ sub new
         length => shift,    # The max length the user can input
 		color => shift,     # [FG,BG] array for color, use ANSI color codes documented in Win32::Console::ANSI [https://metacpan.org/pod/Win32::Console::ANSI#Escape-sequences-for-Set-Graphics-Rendition]
         variable => shift,  # A reference to a variable to store use input into
+        action => shift,    # Reference to the subroutine this button should run when clicked, if any (optional)
 		parent => shift,    # A reference to a parent object, if any (optional)
 		enabled => 1,       # 1/0 Whether this object can be interacted with (optional)
 	};
@@ -65,7 +66,7 @@ sub draw()
     }
     $line .= "]";
 
-    ASCIIUI::Text::printAt($x, $y, $line, $framebuffer, "\e[$self->{color}[0];$self->{color}[1]m"); # Write display data to framebuffer
+    ASCIIUI::Text::printAt($x, $y, $line, $framebuffer, $self->getColorString()); # Write display data to framebuffer
 }
 
 # Returns length, overrides parent function

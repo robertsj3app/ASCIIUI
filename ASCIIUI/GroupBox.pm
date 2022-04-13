@@ -79,20 +79,14 @@ sub draw
 	$line .= '=' for 1..$length;
 	my $line2 = '';
 	$line2 .= ' ' for 1..$length-4;
-	ASCIIUI::Text::printAt($x,$y,$titLine,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+	ASCIIUI::Text::printAt($x,$y,$titLine,$framebuffer,$self->getColorString());
 	$i = 0;
 	for(1..$width)
 	{
-		ASCIIUI::Text::printAt($x,$y + $i + 1,"||" . $line2 . "||",$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
+		ASCIIUI::Text::printAt($x,$y + $i + 1,"||" . $line2 . "||",$framebuffer,$self->getColorString());
 		$i++;
 	}
-	ASCIIUI::Text::printAt($x,$y + $i + 1,$line,$framebuffer,"\e[$self->{color}[0];$self->{color}[1]m");
-	
-	foreach $b (@{$self->{children}})
-	{
-		$b->redraw();
-	}
-	print "\e[39;49m";
+	ASCIIUI::Text::printAt($x,$y + $i + 1,$line,$framebuffer,$self->getColorString());
 }
 sub redraw
 {

@@ -30,11 +30,18 @@ sub setColor
 	$self->{color} = $changeTo;
 }
 
-# Return this object's color
+# Return this object's color (as reference to new anonymous array)
 sub getColor
 {
 	my ($self) = @_;
-	return $self->{color};
+	return [$self->{color}[0], $self->{color}[1]];
+}
+
+# Return this object's color as an ANSI escape code string
+sub getColorString
+{
+	my ($self) = @_;
+	return "\e[$self->{color}[0];$self->{color}[1]m";
 }
 
 # Set new parent reference
@@ -59,7 +66,7 @@ sub setPos
 	$self->{topCorner}[1] = $newY;
 }
 
-# Return position, either X or Y, or both.
+# Return position, either X or Y, or both (as reference to new anonymous array).
 sub getPos
 {
 	my ($self, $index) = @_;
@@ -68,7 +75,7 @@ sub getPos
 	{
 		return $self->{topCorner}[$index];
 	}
-	return @{$self->{topCorner}};
+	return [$self->{topCorner}[0], $self->{topCorner}[1]];
 }
 
 sub draw

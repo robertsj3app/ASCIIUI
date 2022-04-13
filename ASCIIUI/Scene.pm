@@ -6,7 +6,7 @@ use ASCIIUI::Button;
 use ASCIIUI::InputField;
 use ASCIIUI::GroupBox;
 use ASCIIUI::Hotkey;
-use Win32::Console::ANSI qw(SetConsoleFullScreen Cursor);
+use Win32::Console::ANSI;
 use Term::RawInput;
 
 my $selectedElement = ();
@@ -15,6 +15,12 @@ my @framebuffer = ();
 my $cursorHidden = 1;
 $SIG{INT}  = \&quit;
 $SIG{TERM} = \&quit;
+
+#use utf8;
+#binmode STDOUT, ":utf8";
+#system("chcp 65001");
+
+
 
 # Declares a new Scene object.
 sub new
@@ -131,7 +137,8 @@ sub updateFrameBuffer
 	my $j;
 	my $frame;
 
-	Cursor(1,1);
+	#Cursor(1,1);
+	print "\e[1;1H";
 	for($i = 0; $i < $self->{size}[1]; $i++)
 	{
 		for($j = 0; $j < $self->{size}[0]; $j++)
@@ -173,7 +180,7 @@ sub updateFrameBuffer
 		}
 	}
 
-	print $frame;	
+	print  $frame;
 }
 
 sub load
